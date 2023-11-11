@@ -10,8 +10,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $gender = mysqli_real_escape_string($conn, $_POST["gender"]);
     $contact_number = mysqli_real_escape_string($conn, $_POST["ContactNumber"]);
     $address = mysqli_real_escape_string($conn, $_POST["address"]);
-    $vehicle_name = mysqli_real_escape_string($conn, $_POST["VehicleName"]);
-    $vehicle_number = mysqli_real_escape_string($conn, $_POST["VehicleNumber"]);
+    $VehicleName = mysqli_real_escape_string($conn, $_POST["VehicleName"]);
+    $VehicleNumber = mysqli_real_escape_string($conn, $_POST["VehicleNumber"]);
+    $vehicle_type = mysqli_real_escape_string($conn, $_POST["vehicle_type"]);
 
     // Check if the user with the same email already exists
     $checkQuery = "SELECT * FROM " . ($user_type == 'driver' ? 'drivers' : 'users') . " WHERE Email = '$email'";
@@ -22,15 +23,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         // Insert a new user if the email is not registered
         $table = $user_type == 'driver' ? 'drivers' : 'users';
-        $insertQuery = "INSERT INTO $table (FirstName, LastName, Email, Password, Gender, ContactNumber, Address,VehicleNumber,VehicleName) 
-              VALUES ('$first_name', '$last_name', '$email', '$password', '$gender', '$contact_number', '$address','$vehicle_number', '$vehicle_name')";
+        $insertQuery = "INSERT INTO $table (FirstName, LastName, Email, Password, Gender, ContactNumber, Address, VehicleName, VehicleNumber, vehicle_type) 
+              VALUES ('$first_name', '$last_name', '$email', '$password', '$gender', '$contact_number', '$address', '$VehicleName', 'VehicleNumber', 'vehicle_type')";
 
         if ($conn->query($insertQuery) === TRUE) {
             // Registration is successful, set up session and redirect
             session_start();
             $_SESSION['user_type'] = $user_type;
             $_SESSION['email'] = $email;
-            header("Location: ../otp/send_otp.php");
+            header("Location: ../otp/send_otp.php?source=signup_$user_type");
             exit;
         } else {
             echo "Registration failed. Please check your inputs.";
@@ -38,6 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -49,12 +51,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <h1>User Registration</h1>
     <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
-        <!-- User type selection dropdown -->
-        <label for="user_type">Register as:</label>
-        <select name="user_type" required>
-            <option value="user">User</option>
-            <option value="driver">Driver</option>
-        </select><br><br>
+        <!-- User type selection radio buttons -->
+        <label>Register as:</label>
+        <input type="radio" id="user_type_user" name="user_type" value="user" onclick="toggleVehicleSection(false)">
+        <label for="user_type_user">User</label>
+
+        <input type="radio" id="user_type_driver" name="user_type" value="driver" onclick="toggleVehicleSection(true)">
+        <label for="user_type_driver">Driver</label>
+        <br><br>
 
         <!-- User registration form fields -->
         <label for="first_name">First Name:</label>
@@ -75,22 +79,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <textarea name="address" rows="4" required></textarea><br><br>
 
         <!-- Vehicle details for drivers -->
-        <div id="vehicle_fields" style="display: none;">
+        <div id="vehicleSection" style="display: none;">
+            <label for="vehicle_type">Vehicle Type:</label>
+            <select name="vehicle_type">
+                <option value="auto_rickshaw">Auto Rickshaw</option>
+                <option value="car">Car</option>
+                <option value="bike">Bike</option>
+            </select><br><br>
+
             <label for="VehicleName">Vehicle Name:</label>
-            <input type="text" name="VehicleName"><br><br>
+            <input type="text" id="VehicleName" name="VehicleName"><br><br>
+
             <label for="VehicleNumber">Vehicle Number:</label>
-            <input type="text" name="VehicleNumber"><br><br>
+            <input type="text" id="VehicleNumber" name="VehicleNumber">
         </div>
 
         <input type="submit" value="Sign Up">
     </form>
+
     <p>Already have an account? <a href="login.php">Log in</a></p>
 
-    <script>
-        // Show/hide vehicle fields based on user type selection
-        document.querySelector('select[name="user_type"]').addEventListener('change', function () {
-            document.getElementById('vehicle_fields').style.display = (this.value === 'driver') ? 'block' : 'none';
-        });
-    </script>
+        <script>
+            function toggleVehicleSection(showVehicle) {
+                var vehicleSection = document.getElementById('vehicleSection');
+
+                if (showVehicle) {
+                    vehicleSection.style.display = 'block';
+                } else {
+                    vehicleSection.style.display = 'none';
+                }
+            }
+        </script>
+    </form>
 </body>
 </html>
