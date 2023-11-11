@@ -1,57 +1,71 @@
-"use strict";
+let map, searchManager, directionsManager;
+let pickupMarker, dropoffMarker;
 
-const pickupInput = document.getElementById("pickupLocation");
-const dropoffInput = document.getElementById("dropoffLocation");
-const searchBtn = document.querySelector(".search_btn");
-let map, searchManager;
-
-searchBtn.addEventListener("click", () => {
-    clearMapEntities();
-    geocodeQuery(pickupInput.value, "pickupMap");
-    geocodeQuery(dropoffInput.value, "dropoffMap");
-});
-
-function getMap() {
-    map = new Microsoft.Maps.Map('#pickupMap', {
-        credentials: 'Ak9O0_uk29mapIHmjtgj4MH_4dna5EQKlKAKoZtetwsEc7TxvUAJCPhEYmxwJ5CO',
+function getMaps() {
+    map = new Microsoft.Maps.Map('#dropoff-map', {
+        credentials: 'Ak9O0_uk29mapIHmjtgj4MH_4dna5EQKlKAKoZtetwsEc7TxvUAJCPhEYmxwJ5CO'
     });
 
-    // Initialize map for drop-off location
-    new Microsoft.Maps.Map('#dropoffMap', {
-        credentials: 'Ak9O0_uk29mapIHmjtgj4MH_4dna5EQKlKAKoZtetwsEc7TxvUAJCPhEYmxwJ5CO',
+    Microsoft.Maps.loadModule('Microsoft.Maps.Search', function () {
+        searchManager = new Microsoft.Maps.Search.SearchManager(map);
+    });
+
+    Microsoft.Maps.loadModule('Microsoft.Maps.Directions', function () {
+        directionsManager = new Microsoft.Maps.Directions.DirectionsManager(map);
+        directionsManager.setRenderOptions({ itineraryContainer: null }); // Disable rendering directions on the page
+    });
+
+    document.getElementById('pick-up-location').addEventListener('input', function () {
+        updateMap(this.value, 'pickup');
+    });
+
+    document.getElementById('drop-location').addEventListener('input', function () {
+        updateMap(this.value, 'dropoff');
+    });
+
+    document.getElementById('confirm-locations').addEventListener('click', function () {
+        if (pickupMarker && dropoffMarker) {
+            // Calculate and display the path
+            directionsManager.clearAll();
+            directionsManager.addWaypoint(new Microsoft.Maps.Directions.Waypoint({ location: pickupMarker.getLocation() }));
+            directionsManager.addWaypoint(new Microsoft.Maps.Directions.Waypoint({ location: dropoffMarker.getLocation() }));
+            directionsManager.calculateDirections();
+
+            // Show the "Request Now" button
+            document.getElementById('submit-button').style.display = 'block';
+        } else {
+            alert('Please select both pickup and drop-off locations.');
+        }
     });
 }
 
-function geocodeQuery(query, mapId) {
-    if (!searchManager) {
-        Microsoft.Maps.loadModule('Microsoft.Maps.Search', function () {
-            searchManager = new Microsoft.Maps.Search.SearchManager(map);
-            geocodeQuery(query, mapId);
-        });
-    } else {
-        let searchRequest = {
-            where: query,
-            callback: function (r) {
-                if (r && r.results && r.results.length > 0) {
-                    const pin = new Microsoft.Maps.Pushpin(r.results[0].location);
+function updateMap(location, type) {
+    if (searchManager) {
+        const searchRequest = {
+            where: location,
+            callback: function (results) {
+                if (results && results.results && results.results.length > 0) {
+                    const location = results.results[0].location;
+                    map.setView({ center: location });
+
+                    const pin = new Microsoft.Maps.Pushpin(location);
+
+                    if (type === 'pickup') {
+                        if (pickupMarker) {
+                            map.entities.remove(pickupMarker);
+                        }
+                        pickupMarker = pin;
+                    } else if (type === 'dropoff') {
+                        if (dropoffMarker) {
+                            map.entities.remove(dropoffMarker);
+                        }
+                        dropoffMarker = pin;
+                    }
+
                     map.entities.push(pin);
-
-                    const targetMap = new Microsoft.Maps.Map(`#${mapId}`, {
-                        credentials: 'Ak9O0_uk29mapIHmjtgj4MH_4dna5EQKlKAKoZtetwsEc7TxvUAJCPhEYmxwJ5CO',
-                        center: r.results[0].location,
-                        zoom: 15,
-                    });
-
-                    const targetPin = new Microsoft.Maps.Pushpin(r.results[0].location);
-                    targetMap.entities.push(targetPin);
-
-                    targetMap.setView({ bounds: r.results[0].bestView });
                 } else {
-                    alert(`No results found for ${query}.`);
+                    alert('Location not found');
                 }
-            },
-            errorCallback: function (e) {
-                alert(`Error: ${e.message}`);
             }
         };
 
@@ -59,8 +73,5 @@ function geocodeQuery(query, mapId) {
     }
 }
 
-function clearMapEntities() {
-    map.entities.clear();
-    document.getElementById("pickupMap").innerHTML = "";
-    document.getElementById("dropoffMap").innerHTML = "";
-}
+// Call the getMaps function to initialize the map
+getMaps();
