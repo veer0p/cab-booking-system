@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $gender = mysqli_real_escape_string($conn, $_POST["gender"]);
     $contact_number = mysqli_real_escape_string($conn, $_POST["ContactNumber"]);
     $address = mysqli_real_escape_string($conn, $_POST["address"]);
-    
+
     // Check if the user with the same email already exists
     $checkQuery = "SELECT * FROM " . ($user_type == 'driver' ? 'drivers' : 'users') . " WHERE Email = '$email'";
     $checkResult = $conn->query($checkQuery);
@@ -20,12 +20,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         // Insert a new user if the email is not registered
         $table = $user_type == 'driver' ? 'drivers' : 'users';
-        
+
         // Include or exclude vehicle-related columns based on user type
         $vehicleColumns = $user_type == 'driver' ? ", VehicleName, VehicleNumber, vehicle_type" : "";
+        
+        // Retrieve vehicle-related values from the form
+        $VehicleName = mysqli_real_escape_string($conn, $_POST["VehicleName"]);
+        $VehicleNumber = mysqli_real_escape_string($conn, $_POST["VehicleNumber"]);
+        $vehicle_type = mysqli_real_escape_string($conn, $_POST["vehicle_type"]);
 
-        $insertQuery = "INSERT INTO $table (FirstName, LastName, Email, Password, Gender, ContactNumber, Address$vehicleColumns) 
-              VALUES ('$first_name', '$last_name', '$email', '$password', '$gender', '$contact_number', '$address'$vehicleColumns)";
+        $insertQuery = "INSERT INTO $table (FirstName, LastName, Email, Password, Gender, ContactNumber, Address, UserType$vehicleColumns) 
+              VALUES ('$first_name', '$last_name', '$email', '$password', '$gender', '$contact_number', '$address', '$user_type', '$VehicleName', '$VehicleNumber', '$vehicle_type')";
 
         if ($conn->query($insertQuery) === TRUE) {
             // Registration is successful, set up session and redirect
@@ -35,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: ../otp/send_otp.php?source=signup_$user_type");
             exit;
         } else {
-            echo "Registration failed. Please check your inputs.";
+            echo "Registration failed. Error: " . $conn->error;
         }
     }
 }
