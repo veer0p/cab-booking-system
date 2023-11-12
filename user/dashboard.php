@@ -1,6 +1,5 @@
 <?php
-include("../scripts/auth.php");
-checkAuthentication();
+
 // Include the database connection script
 require('../includes/db_connect.php');
 
@@ -57,40 +56,92 @@ mysqli_close($conn);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <title>Responsive Navigation Menu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Request a Pick Up and Drop</title>
-    <script type="text/javascript" src="https://www.bing.com/api/maps/mapcontrol?callback=getMaps&key=Ak9O0_uk29mapIHmjtgj4MH_4dna5EQKlKAKoZtetwsEc7TxvUAJCPhEYmxwJ5CO"></script>
     <link rel="stylesheet" href="./dashboard.css">
-</head>
-<body>
-    <h1>Request a Pick Up and Drop</h1>
-
-    <div class="map-container" id="dropoff-map"></div>
-
-    <form id="locationForm" action="dashboard.php" method="post" style="margin-bottom: 0;">
-        <label for="pick-up-location">Pick Up Location:</label>
-        <input type="text" id="pick-up-location" name="pick-up-location" required><br><br>
-
-        <label for="drop-location">Drop Off Location:</label>
-        <input type="text" id="drop-location" name="drop-location" required><br><br>
-
-        <button type="button" id="confirm-locations">Confirm Locations</button>
-        <!-- Container for displaying total distance and fare -->
-        <div id="fare-container"></div>
-
-        <!-- Submit button is now inside the fare-container div -->
-        <input type="submit" id="submit-button" name="request_now" value="Request Now" style="display: none;">
-    </form>
-
+    <script type="text/javascript" src="https://www.bing.com/api/maps/mapcontrol?callback=getMaps&key=Ak9O0_uk29mapIHmjtgj4MH_4dna5EQKlKAKoZtetwsEc7TxvUAJCPhEYmxwJ5CO"></script>
     <script src="../scripts/maps.js"></script>
     <script>
         // Call the getMaps function to initialize the map
         getMaps();
     </script>
-</body>
-</html>
+</head>
+<body>
+    <section class="header">
+        <nav>
+            <div class="logo">MI LUXOR</div>
+            <input type="checkbox" id="click">
+            <label for="click" class="menu-btn">
+                <i class="fas fa-bars"></i>
+            </label>
+            <ul>
+                <li><a class="active" href="#">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Services</a></li>
+                <li><a href="#">Cab</a></li>
+                <li><a href="#">Feedback</a></li>
+            </ul>
+        </nav>
+        <div class="text-box">
+            <h1>there are big news</h1>
+            <p>midsugfic ugcubsdjcndsuhcgd ygcdsuscgh
+                bcjdgcdbcdiuchdicndslgcdbcuydg hudsigcdnk
+            </p>
+        </div>
+    </section>
 
+    <div class="map-form-container">
+        <div class="map-container" id="dropoff-map"></div>
+
+        <section class="container">
+            <div class="book-ride-form">
+                <h1>Book Your Ride</h1>
+                <form id="locationForm" action="dashboard.php" method="post">
+                    <div class="input-group">
+                        <label for="pick-up-location">Pick Up Location</label>
+                        <input type="text" id="pick-up-location" name="pick-up-location" placeholder="Type Location" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="drop-location">Drop Off Location:</label>
+                        <input type="text" id="drop-location" name="drop-location" placeholder="Type Location" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="cab-type">Cab Type</label>
+                        <select name="cab_type" id="cab-type">
+                            <option value="car">Car</option>
+                            <option value="suv">SUV</option>
+                            <option value="van">Van</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="pickup-date">Pick Up Date</label>
+                        <input type="date" name="pickup_date" id="pickup-date" placeholder="Pick Up Date">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="pickup-time">Pick Up Time</label>
+                        <input type="time" name="pickup_time" id="pickup-time" placeholder="Pick Up Time">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="cab-model">Cab Model</label>
+                        <select name="cab_model" id="cab-model">
+                            <option value="Toyota Camry">Toyota Camry</option>
+                            <option value="Honda Accord">Honda Accord</option>
+                            <option value="Hyundai Sonata">Hyundai Sonata</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="submit-button">BOOK CAB →</button>
+                </form>
+            </div>
+        </section>
+    </div>
+</body>
 </html>

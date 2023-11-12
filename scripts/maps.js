@@ -22,21 +22,6 @@ function getMaps() {
     document.getElementById('drop-location').addEventListener('input', function () {
         updateMap(this.value, 'dropoff');
     });
-
-    document.getElementById('confirm-locations').addEventListener('click', function () {
-        if (pickupMarker && dropoffMarker) {
-            // Calculate and display the path
-            directionsManager.clearAll();
-            directionsManager.addWaypoint(new Microsoft.Maps.Directions.Waypoint({ location: pickupMarker.getLocation() }));
-            directionsManager.addWaypoint(new Microsoft.Maps.Directions.Waypoint({ location: dropoffMarker.getLocation() }));
-            directionsManager.calculateDirections();
-
-            // Show the "Request Now" button
-            document.getElementById('submit-button').style.display = 'block';
-        } else {
-            alert('Please select both pickup and drop-off locations.');
-        }
-    });
 }
 
 function updateMap(location, type) {
@@ -63,6 +48,13 @@ function updateMap(location, type) {
                     }
 
                     map.entities.push(pin);
+
+                    // Add event listeners to both markers for the location change
+                    Microsoft.Maps.Events.addHandler(pickupMarker, 'dragend', displayPathIfBothMarkersSet);
+                    Microsoft.Maps.Events.addHandler(dropoffMarker, 'dragend', displayPathIfBothMarkersSet);
+
+                    // Call the displayPathIfBothMarkersSet function after updating the markers
+                    displayPathIfBothMarkersSet();
                 } else {
                     alert('Location not found');
                 }
@@ -70,6 +62,16 @@ function updateMap(location, type) {
         };
 
         searchManager.geocode(searchRequest);
+    }
+}
+
+function displayPathIfBothMarkersSet() {
+    if (pickupMarker && dropoffMarker) {
+        // Calculate and display the path
+        directionsManager.clearAll();
+        directionsManager.addWaypoint(new Microsoft.Maps.Directions.Waypoint({ location: pickupMarker.getLocation() }));
+        directionsManager.addWaypoint(new Microsoft.Maps.Directions.Waypoint({ location: dropoffMarker.getLocation() }));
+        directionsManager.calculateDirections();
     }
 }
 
